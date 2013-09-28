@@ -1,20 +1,10 @@
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
+#include "libmatrix.h"
 
 #define true 1
 #define false 0
 
-
-struct Pixel
-{
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
-	/* data */
-};
 
 
 int loadMatrix(const char* fname, struct Pixel ***matrix, int *_x, int *_y)
