@@ -1,3 +1,8 @@
+/*
+export LD_LIBRARY_PATH = $PWD
+*/
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +14,7 @@ int main(int argc, char* argv[])
 	int x,y, xmass, ymass;
 	loadMatrix("matrix.ppm", &matrix, &x, &y);
 	//print_matrix(matrix,x,y);
-	noize_delete(matrix, x, y);
+	start_noize_delete(matrix, x, y);
 	center_of_mass(matrix, x, y, &xmass, &ymass);
 	printf("Img x size:%d\n", x);
 	printf("Img y size:%d\n", y);

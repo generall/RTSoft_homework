@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "libmatrix.h"
 
 #define true 1
@@ -79,6 +77,7 @@ void noize_delete(struct Pixel **matrix, int x, int y)
 				}
 				if(is_Single)
 				{
+					printf("delete at %d %d",i,j);
 					matrix[i][j].R =255;
 					matrix[i][j].G =255;
 					matrix[i][j].B =255;
@@ -87,7 +86,6 @@ void noize_delete(struct Pixel **matrix, int x, int y)
 		}
 	}
 }
-
 
 
 void print_matrix(struct Pixel **matrix, int x, int y)
@@ -114,6 +112,7 @@ void center_of_mass (struct Pixel **matrix, int x, int y, int *xmass, int *ymass
 	double Ysum = 0;
 	double TotalMass = 0;
 
+
 	for(int i = 0; i < y; i++)
 	{
 		for(int j = 0; j < x; j++)
@@ -136,4 +135,76 @@ void center_of_mass (struct Pixel **matrix, int x, int y, int *xmass, int *ymass
 		*xmass = 0;
 		*ymass = 0;
 	}
+}
+
+void * noize_delete_parallel(void *ptr)
+{
+	struct TMatrix *matrix  = (struct TMatrix *) ptr;
+	int is_Single = true;
+	for(int i = matrix->y_from; i < matrix->y_to; i++)
+	{
+		for(int j = matrix->x_from; j < matrix->x_to; j++)
+		{
+			if(0 == matrix->matrix[i][j].B)
+			{
+				is_Single = true;
+				if(i != matrix->y_from)
+				{
+					if(0 == matrix->matrix[i-1][j].B)
+						is_Single = false;
+				}
+				if(i != matrix->y_to - 1)
+				{
+					if(0 == matrix->matrix[i+1][j].B)
+						is_Single = false;
+				}
+				if(j != matrix->x_from)
+				{
+					if(0 == matrix->matrix[i][j-1].B)
+						is_Single = false;
+				}
+				if(j != matrix->x_to - 1)
+				{
+					if(0 == matrix->matrix[i][j+1].B)
+						is_Single = false;
+				}
+				if(is_Single)
+				{
+					printf("delete at %d %d\n",i,j);
+					matrix->matrix[i][j].R =255;
+					matrix->matrix[i][j].G =255;
+					matrix->matrix[i][j].B =255;
+				}	
+			}
+		}
+	}
+}
+
+void start_noize_delete(struct Pixel **m, int x, int y)
+{
+
+	pthread_t thread1, thread2;
+
+	struct TMatrix m1, m2;
+	m1.matrix = m;
+	m1.x_from=0;
+	m1.x_to=x/2;
+	m1.y_from=0;
+	m1.y_to=y/2;
+
+	m2.matrix = m;
+	m2.x_from=x/2+1;
+	m2.x_to=x;
+	m2.y_from=y/2+1;
+	m2.y_to=y;
+
+	struct TMatrix * pm1, *pm2;
+	pm1 = &m1;
+	pm2 = &m2;
+
+	int iret1, iret2;
+	iret1 = pthread_create( &thread1, NULL, noize_delete_parallel, (void*) pm1);
+	iret2 = pthread_create( &thread2, NULL, noize_delete_parallel, (void*) pm2);
+	pthread_join( thread1, NULL);
+	pthread_join( thread2, NULL);
 }
